@@ -65,9 +65,9 @@ To set the source path (the location of your LESS files), add in apps/APP/config
 
 sfLessPhpPlugin rechecks data/stylesheets/*.less at every routes init. To prevent this, add this in your apps/APP/config/app.yml:
 
-  prod:
-    app_sf_less_php_plugin:
-  	  compile:  false
+	prod:
+	  app_sf_less_php_plugin:
+	    compile:  false
 
 Tasks
 =====
@@ -93,7 +93,9 @@ If you are using git to version control your code and LESS for all your styleshe
 
 Contributors
 ============
+
 * everzet ([http://github.com/everzet](http://github.com/everzet))
 
 sfLessPhpPlugin is based on lessphp by leafo ([http://github.com/leafo](http://github.com/leafo))
+
 LESS is maintained by Alexis Sellier [http://github.com/cloudhead](http://github.com/cloudhead)
