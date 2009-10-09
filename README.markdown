@@ -67,13 +67,13 @@ Configuration
 
 To set the source path (the location of your LESS files), add in apps/APP/config/app.yml:
 
-	app_sf_less_php_plugin:
+	sf_less_php_plugin:
 	  path: "/path/to/less/files"
 
 sfLessPhpPlugin rechecks data/stylesheets/*.less at every routes init. To prevent this, add this in your apps/APP/config/app.yml:
 
 	prod:
-	  app_sf_less_php_plugin:
+	  sf_less_php_plugin:
 	    compile:  false
 
 Tasks
