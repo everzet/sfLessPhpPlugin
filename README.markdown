@@ -19,6 +19,13 @@ LESS extends CSS with: variables, mixins, operations and nested rules. For more 
 Installation
 ============
 
+Using symfony plugin:install
+-----------------------------------
+
+Use this to install sfLessPhpPlugin:
+
+	$ symfony plugin:install sfLessPhpPlugin
+
 Using git clone
 -----------------------------------
 
