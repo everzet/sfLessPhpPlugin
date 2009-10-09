@@ -1,7 +1,17 @@
 <?php
 
+/**
+ * Compile LESS files
+ *
+ * @package     sfLessPhpPlugin
+ * @subpackage  task
+ * @author      ever.zet <ever.zet@gmail.com>
+ */
 class lessCompileTask extends sfBaseTask
 {
+  /**
+   * @see sfTask
+   */
   protected function configure()
   {
     $this->addOptions(array(
@@ -19,6 +29,9 @@ Call it with:
 EOF;
   }
 
+  /**
+   * @see sfTask
+   */
   protected function execute($arguments = array(), $options = array())
   {
     if ('true' === $options['with-clean'])
@@ -30,6 +43,7 @@ EOF;
         $this->logSection('removed', str_replace(sfLessPhp::getLessPath() . '/', '', $cssFile));
       }
     }
+
     $lessFiles = sfLessPhp::findLessFiles();
     foreach ($lessFiles as $lessFile)
     {
