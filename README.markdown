@@ -65,16 +65,29 @@ The example above will result in a single CSS file in `web/css/clients/screen.cs
 Configuration
 =============
 
-To set the source path (the location of your LESS files), add in apps/APP/config/app.yml:
+To set the source path (the location of your project LESS files), add in apps/APP/config/app.yml:
 
-	app_sf_less_php_plugin:
-	  path: "/path/to/less/files"
+	all:
+		sf_less_php_plugin:
+			path: "/path/to/less/files"
 
 sfLessPhpPlugin rechecks data/stylesheets/*.less at every routes init. To prevent this, add this in your apps/APP/config/app.yml:
 
 	prod:
-	  app_sf_less_php_plugin:
+	  sf_less_php_plugin:
 	    compile:  false
+
+sfLessPhpPlugin also can check all plugins stylesheets to compile (plugins/*/data/stylesheets). To enable this, add in your apps/APP/config/app.yml:
+
+	dev:
+		sf_less_php_plugin:
+			compile_plugins:	true
+
+sfLessPhpPlugin checks the dates of LESS & CSS files, and will compile again only if LESS file have been changed since last parsing. To prevent this check & to enforce everytime compiling, add this in your apps/APP/config/app.yml:
+
+	dev:
+		sf_less_php_plugin:
+			check_dates:	false
 
 Tasks
 =====
@@ -85,10 +98,13 @@ To parse all LESS files and save the resulting CSS files to the destination path
 
 	$ symfony less:compile
 
-To delete all CSS files before parsing LESS, run:
+To delete all compiled CSS (only files, that been compiled from LESS files) files before parsing LESS, run:
 
-	$ symfony less:compile --with-clean=true
+	$ symfony less:compile --with-clean
 
+To parse all LESS files, including plugin stylesheets, run:
+
+	$ symfony less:compile --with-plugins
 
 Git
 ===
