@@ -12,7 +12,13 @@ require_once dirname(__FILE__) . '/vendor/lessphp/lessc.inc.php';
  */
 class sfLessPhp
 {
-  static protected function getPluginsPathsFor($subdir)
+  /**
+   * Returns needed subpathes for all plugins of current project
+   *
+   * @param string $subPath relative path of plugin
+   * @return array an array of paths
+   */
+  static protected function getPluginsPathsFor($subPath)
   {
     $paths = array();
     $plugins = sfFinder::type('dir')
@@ -21,7 +27,7 @@ class sfLessPhp
       ->in(sfConfig::get('sf_plugins_dir'));
     foreach ($plugins as $plugin)
     {
-      $paths[] = $plugin . $subdir;
+      $paths[] = $plugin . $subPath;
     }
 
     return $paths;
@@ -30,6 +36,7 @@ class sfLessPhp
   /**
    * Returns paths to CSS files
    *
+   * @param boolean $withPlugins returns all paths, including plugins if true
    * @return string a path to CSS files directory
    */
   static public function getCssPaths($withPlugins = false)
@@ -46,6 +53,7 @@ class sfLessPhp
   /**
    * Returns all CSS files under the CSS directory
    *
+   * @param boolean $withPlugins returns files from project & plugins if true
    * @return array an array of CSS files
    */
   static public function findCssFiles($withPlugins = false)
@@ -56,11 +64,23 @@ class sfLessPhp
       ->in(self::getCssPaths($withPlugins));
   }
 
+  /**
+   * Returns header text for CSS files
+   *
+   * @return string a header text for CSS files
+   */
   static public function getCssHeader()
   {
     return '/* This CSS is autocompiled by LESS parser. Don\'t edit it manually. */';
   }
 
+  /**
+   * Checks if CSS file was compiled from LESS
+   *
+   * @param string $dir a path to file
+   * @param string $entry a filename
+   * @return boolean
+   */
   static public function isCssLessCompiled($dir, $entry)
   {
     $file = $dir . '/' . $entry;
@@ -74,6 +94,7 @@ class sfLessPhp
   /**
    * Returns paths to LESS files
    *
+   * @param boolean $withPlugins returns all paths, including plugins if true
    * @return string a path to LESS files directories
    */
   static public function getLessPaths($withPlugins = false)
@@ -93,6 +114,7 @@ class sfLessPhp
   /**
    * Returns all LESS files under the LESS directories
    *
+   * @param boolean $withPlugins returns files from project & plugins if true
    * @return array an array of LESS files
    */
   static public function findLessFiles($withPlugins = false)
@@ -122,6 +144,7 @@ class sfLessPhp
    * Compiles LESS file to CSS
    *
    * @param string $lessFile a LESS file
+   * @param boolean $checkDates do we need to check dates before compile?
    * @return boolean true if succesfully compiled & false in other way
    */
   static public function compile($lessFile, $checkDates = true)
