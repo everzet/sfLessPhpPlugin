@@ -77,17 +77,23 @@ sfLessPhpPlugin rechecks data/stylesheets/*.less at every routes init. To preven
 	  sf_less_php_plugin:
 	    compile:  false
 
-sfLessPhpPlugin also can check all plugins stylesheets to compile (plugins/*/data/stylesheets). To enable this, add in your apps/APP/config/app.yml:
-
-	dev:
-		sf_less_php_plugin:
-			compile_plugins:	true
-
 sfLessPhpPlugin checks the dates of LESS & CSS files, and will compile again only if LESS file have been changed since last parsing. To prevent this check & to enforce everytime compiling, add this in your apps/APP/config/app.yml:
 
 	dev:
 		sf_less_php_plugin:
 			check_dates:	false
+
+By default, sfLessPhpPlugin uses lessphp library to compile your LESS files. But you can force plugin to use original Ruby lessc compiler (if you have installed LESS gem):
+
+	all:
+		sf_less_php_plugin:
+			use_lessc:	true
+
+And of course, if you use Mac OS & Ruby lessc compiler, you can set it to use Growl notifications with:
+
+	all:
+		sf_less_php_plugin:
+			use_growl:	true
 
 Tasks
 =====
@@ -102,9 +108,9 @@ To delete all compiled CSS (only files, that been compiled from LESS files) file
 
 	$ symfony less:compile --with-clean
 
-To parse all LESS files, including plugin stylesheets, run:
+If you want to use lessc parser instead of default lessphp, run:
 
-	$ symfony less:compile --with-plugins
+	$ symfony less:compile --lessc
 
 Git
 ===

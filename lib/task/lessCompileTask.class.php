@@ -15,8 +15,8 @@ class lessCompileTask extends sfBaseTask
   protected function configure()
   {
     $this->addOptions(array(
-      new sfCommandOption('with-clean', null, sfCommandOption::PARAMETER_NONE, 'Removing all CSS in web/css before compile'),
-      new sfCommandOption('with-plugins', null, sfCommandOption::PARAMETER_NONE, 'Including all plugins'),
+      new sfCommandOption('lessc', null, sfCommandOption::PARAMETER_NONE, 'Use lessc instead of phpless'),
+      new sfCommandOption('with-clean', null, sfCommandOption::PARAMETER_NONE, 'Removing all compiled CSS in web/css before compile'),
     ));
 
     $this->namespace        = 'less';
@@ -37,31 +37,21 @@ EOF;
   {
     if (isset($options['with-clean']) && $options['with-clean'])
     {
-      $cssFiles = sfLessPhp::findCssFiles(
-        isset($options['with-plugins']) && $options['with-plugins']
-      );
-      foreach ($cssFiles as $cssFile)
+      foreach (sfLessPhp::findCssFiles() as $cssFile)
       {
         unlink($cssFile);
         $this->logSection('removed', str_replace(
-          array(sfConfig::get('sf_root_dir') . '/', 'plugins/', 'web/css/'),
-          '',
-          $cssFile)
-        );
+          sfConfig::get('sf_root_dir') . '/web/css/', '', $cssFile
+        ));
       }
     }
 
-    $lessFiles = sfLessPhp::findLessFiles(
-      isset($options['with-plugins']) && $options['with-plugins']
-    );
-    foreach ($lessFiles as $lessFile)
+    foreach (sfLessPhp::findLessFiles() as $lessFile)
     {
-      if (sfLessPhp::compile($lessFile, false))
+      if (sfLessPhp::compile($lessFile, false, (isset($options['lessc']) && $options['lessc'])))
       {
         $this->logSection('compiled', str_replace(
-          array(sfConfig::get('sf_root_dir') . '/', 'plugins/', 'data/stylesheets/'),
-          '',
-          $lessFile
+          sfConfig::get('sf_root_dir') . '/data/stylesheets/', '', $lessFile
         ));
       }
     }

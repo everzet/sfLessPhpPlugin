@@ -13,55 +13,26 @@ require_once dirname(__FILE__) . '/vendor/lessphp/lessc.inc.php';
 class sfLessPhp
 {
   /**
-   * Returns needed subpathes for all plugins of current project
-   *
-   * @param string $subPath relative path of plugin
-   * @return array an array of paths
-   */
-  static protected function getPluginsPathsFor($subPath)
-  {
-    $paths = array();
-    $plugins = sfFinder::type('dir')
-      ->maxdepth(0)
-      ->discard('.*')
-      ->in(sfConfig::get('sf_plugins_dir'));
-    foreach ($plugins as $plugin)
-    {
-      $paths[] = $plugin . $subPath;
-    }
-
-    return $paths;
-  }
-
-  /**
    * Returns paths to CSS files
    *
-   * @param boolean $withPlugins returns all paths, including plugins if true
    * @return string a path to CSS files directory
    */
-  static public function getCssPaths($withPlugins = false)
+  static public function getCssPaths()
   {  
-    $paths = array(sfConfig::get('sf_root_dir') . '/web/css');
-    if ($withPlugins)
-    {
-      $paths = array_merge($paths, self::getPluginsPathsFor('/web/css'));
-    }
-
-    return $paths;
+    return sfConfig::get('sf_root_dir') . '/web/css';
   }
 
   /**
    * Returns all CSS files under the CSS directory
    *
-   * @param boolean $withPlugins returns files from project & plugins if true
    * @return array an array of CSS files
    */
-  static public function findCssFiles($withPlugins = false)
+  static public function findCssFiles()
   {
     return sfFinder::type('file')
       ->exec(array('sfLessPhp', 'isCssLessCompiled'))
       ->name('*.css')
-      ->in(self::getCssPaths($withPlugins));
+      ->in(self::getCssPaths());
   }
 
   /**
@@ -69,7 +40,7 @@ class sfLessPhp
    *
    * @return string a header text for CSS files
    */
-  static public function getCssHeader()
+  static protected function getCssHeader()
   {
     return '/* This CSS is autocompiled by LESS parser. Don\'t edit it manually. */';
   }
@@ -94,34 +65,26 @@ class sfLessPhp
   /**
    * Returns paths to LESS files
    *
-   * @param boolean $withPlugins returns all paths, including plugins if true
    * @return string a path to LESS files directories
    */
-  static public function getLessPaths($withPlugins = false)
+  static public function getLessPaths()
   {
-    $paths = array(sfConfig::get(
+    return sfConfig::get(
       'app_sf_less_php_plugin_path',
       sfConfig::get('sf_root_dir') . '/data/stylesheets'
-    ));
-    if ($withPlugins)
-    {
-      $paths = array_merge($paths, self::getPluginsPathsFor('/data/stylesheets'));
-    }
-
-    return $paths;
+    );
   }
 
   /**
    * Returns all LESS files under the LESS directories
    *
-   * @param boolean $withPlugins returns files from project & plugins if true
    * @return array an array of LESS files
    */
-  static public function findLessFiles($withPlugins = false)
+  static public function findLessFiles()
   {
     return sfFinder::type('file')
       ->name('*.less')
-      ->in(self::getLessPaths($withPlugins));
+      ->in(self::getLessPaths());
   }
 
   /**
@@ -131,10 +94,7 @@ class sfLessPhp
    */
   static public function findAndCompile(sfEvent $event)
   {
-    $lessFiles = self::findLessFiles(
-      sfConfig::get('app_sf_less_php_plugin_compile_plugins', false)
-    );
-    foreach ($lessFiles as $lessFile)
+    foreach (self::findLessFiles() as $lessFile)
     {
       self::compile($lessFile);
     }
@@ -147,10 +107,16 @@ class sfLessPhp
    * @param boolean $checkDates do we need to check dates before compile?
    * @return boolean true if succesfully compiled & false in other way
    */
-  static public function compile($lessFile, $checkDates = true)
+  static public function compile($lessFile, $checkDates = null, $useLessc = null)
   {
     if ('_' !== substr(basename($lessFile), 0, 1))
     {
+      $useLessc = is_null($useLessc)
+        ? sfConfig::get('app_sf_less_php_plugin_use_lessc', false)
+        : $useLessc;
+      $checkDates = is_null($checkDates)
+        ? sfConfig::get('app_sf_less_php_plugin_check_dates', true)
+        : $checkDates;
       $cssFile = str_replace(
         array('data/stylesheets', '.less'),
         array('web/css', '.css'),
@@ -162,24 +128,46 @@ class sfLessPhp
         mkdir(dirname($cssFile), 0777, true);
       }
 
-      if ($checkDates && sfConfig::get('app_sf_less_php_plugin_check_dates', true))
+      if ($checkDates)
       {
-        if (!is_file($cssFile) || filemtime($lessFile) > filemtime($cssFile)) {
-          $less = new lessc($lessFile);
-          file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $less->parse());
-
-          return true;
+        if (!is_file($cssFile) || filemtime($lessFile) > filemtime($cssFile))
+        {
+          return self::callCompiler($lessFile, $cssFile, $useLessc);
         }
       }
       else
       {
-        $less = new lessc($lessFile);
-        file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $less->parse());
-
-        return true;
+        return self::callCompiler($lessFile, $cssFile, $useLessc);
       }
     }
 
     return false;
+  }
+
+  /**
+   * Calls current LESS compiler for single file
+   *
+   * @param string $lessFile a LESS file
+   * @param string $cssFile a CSS file
+   * @return boolean true if succesfully compiled & false in other way
+   */
+  static protected function callCompiler($lessFile, $cssFile, $useLessc = false)
+  {
+    if (!$useLessc && !sfConfig::get('sf_sf_less_php_plugin_use_lessc', false))
+    {
+      $less = new lessc($lessFile);
+      file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $less->parse());
+
+      return true;
+    }
+    else
+    {
+      $command = sfConfig::get('app_sf_less_php_plugin_lessc_growl', false) ? 'lessc -g' : 'lessc';
+      exec(sprintf('%s "%s" "%s"', $command, $lessFile, $cssFile));
+      $css = file_get_contents($cssFile);
+      file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $css);
+
+      return true;
+    }
   }
 }
