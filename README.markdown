@@ -124,6 +124,7 @@ Contributors
 ============
 
 * everzet ([http://github.com/everzet](http://github.com/everzet))
+* tonio ([http://github.com/tonio](http://github.com/tonio))
 
 sfLessPhpPlugin is based on lessphp by leafo ([http://github.com/leafo](http://github.com/leafo))
 
