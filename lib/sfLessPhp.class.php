@@ -71,7 +71,7 @@ class sfLessPhp
   {
     return sfConfig::get(
       'app_sf_less_php_plugin_path',
-      sfConfig::get('sf_root_dir') . '/data/stylesheets'
+      sfConfig::get('sf_data_dir') . '/stylesheets'
     );
   }
 
