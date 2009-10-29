@@ -153,7 +153,7 @@ class sfLessPhp
    */
   static protected function callCompiler($lessFile, $cssFile, $useLessc = false)
   {
-    if (!$useLessc && !sfConfig::get('sf_sf_less_php_plugin_use_lessc', false))
+    if (!$useLessc && !sfConfig::get('app_sf_less_php_plugin_use_lessc', false))
     {
       $less = new lessc($lessFile);
       file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $less->parse());
@@ -162,7 +162,7 @@ class sfLessPhp
     }
     else
     {
-      $command = sfConfig::get('app_sf_less_php_plugin_lessc_growl', false) ? 'lessc -g' : 'lessc';
+      $command = sfConfig::get('app_sf_less_php_plugin_use_growl', false) ? 'lessc -g' : 'lessc';
       exec(sprintf('%s "%s" "%s"', $command, $lessFile, $cssFile));
       $css = file_get_contents($cssFile);
       file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $css);
