@@ -68,8 +68,8 @@ Configuration
 To set the source path (the location of your project LESS files), add in apps/APP/config/app.yml:
 
 	all:
-		sf_less_php_plugin:
-			path: "/path/to/less/files"
+	  sf_less_php_plugin:
+	    path: "/path/to/less/files"
 
 sfLessPhpPlugin rechecks data/stylesheets/*.less at every routes init. To prevent this, add this in your apps/APP/config/app.yml:
 
@@ -80,20 +80,20 @@ sfLessPhpPlugin rechecks data/stylesheets/*.less at every routes init. To preven
 sfLessPhpPlugin checks the dates of LESS & CSS files, and will compile again only if LESS file have been changed since last parsing. To prevent this check & to enforce everytime compiling, add this in your apps/APP/config/app.yml:
 
 	dev:
-		sf_less_php_plugin:
-			check_dates:	false
+	  sf_less_php_plugin:
+	    check_dates:	false
 
 By default, sfLessPhpPlugin uses lessphp library to compile your LESS files. But you can force plugin to use original Ruby lessc compiler (if you have installed LESS gem):
 
 	all:
-		sf_less_php_plugin:
-			use_lessc:	true
+	  sf_less_php_plugin:
+	    use_lessc:	true
 
 And of course, if you use Mac OS & Ruby lessc compiler, you can set it to use Growl notifications with:
 
 	all:
-		sf_less_php_plugin:
-			use_growl:	true
+	  sf_less_php_plugin:
+	    use_growl:	true
 
 Tasks
 =====
