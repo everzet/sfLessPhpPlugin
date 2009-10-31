@@ -1,7 +1,7 @@
 sfLessPhpPlugin
 ====
 
-![sfLessPhpPlugin logo](http://github.com/everzet/sfLessPhpPlugin/blob/master/logo.png)
+![sfLessPhpPlugin logo](http://github.com/everzet/sfLessPhpPlugin/raw/master/logo.png)
 
 *LESS in symfony.*
 
