@@ -1,8 +1,6 @@
 sfLessPhpPlugin
 ====
 
-![sfLessPhpPlugin logo](http://github.com/everzet/sfLessPhpPlugin/raw/master/logo.png)
-
 *LESS in symfony.*
 
 sfLessPhpPlugin is a plugin for symfony applications. It automatically parses your applications `.less` files through LESS and outputs CSS files.
