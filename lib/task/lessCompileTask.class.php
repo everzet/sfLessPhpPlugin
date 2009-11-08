@@ -16,7 +16,8 @@ class lessCompileTask extends sfBaseTask
   {
     $this->addOptions(array(
       new sfCommandOption('lessc', null, sfCommandOption::PARAMETER_NONE, 'Use lessc instead of phpless'),
-      new sfCommandOption('with-clean', null, sfCommandOption::PARAMETER_NONE, 'Removing all compiled CSS in web/css before compile'),
+      new sfCommandOption('clean', null, sfCommandOption::PARAMETER_NONE, 'Removing all compiled CSS in web/css before compile'),
+      new sfCommandOption('compression', null, sfCommandOption::PARAMETER_NONE, 'Compress final CSS file')
     ));
 
     $this->namespace        = 'less';
@@ -35,7 +36,8 @@ EOF;
    */
   protected function execute($arguments = array(), $options = array())
   {
-    if (isset($options['with-clean']) && $options['with-clean'])
+    // Remove old CSS files if --with-clean option specified
+    if (isset($options['clean']) && $options['clean'])
     {
       foreach (sfLessPhp::findCssFiles() as $cssFile)
       {
@@ -46,9 +48,14 @@ EOF;
       }
     }
 
+    // Inits sfLessPhp instance for compilation help
+    $lessHelper = new sfLessPhp(false, isset($options['lessc']) && $options['lessc'],
+                                false, isset($options['compression']) && $options['compression']);
+
+    // Compiles LESS files
     foreach (sfLessPhp::findLessFiles() as $lessFile)
     {
-      if (sfLessPhp::compile($lessFile, false, (isset($options['lessc']) && $options['lessc'])))
+      if ($lessHelper->compile($lessFile))
       {
         $this->logSection('compiled', str_replace(
           sfConfig::get('sf_root_dir') . '/data/stylesheets/', '', $lessFile

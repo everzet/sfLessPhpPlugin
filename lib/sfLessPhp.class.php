@@ -13,6 +13,131 @@ require_once dirname(__FILE__) . '/vendor/lessphp/lessc.inc.php';
 class sfLessPhp
 {
   /**
+   * Do we need to check dates before compile
+   *
+   * @var boolean
+   */
+  protected $checkDates     = true;
+
+  /**
+   * Do we use ruby LESSC compiler
+   *
+   * @var boolean
+   */
+  protected $useLessc       = false;
+
+  /**
+   * Do we use LESSC GROWL notifications
+   *
+   * @var boolean
+   */
+  protected $useGrowl       = false;
+
+  /**
+   * Do we need compression for CSS files
+   *
+   * @var boolean
+   */
+  protected $useCompression = false;
+
+  /**
+   * Constructor
+   *
+   * @param boolean $checkDates Do we need to check dates before compile
+   * @param boolean $useLessc Do we use ruby LESSC compiler
+   * @param boolean $useGrowl Do we use LESSC GROWL notifications
+   * @param boolean $useCompression Do we need compression for CSS files
+   */
+  public function __construct($checkDates = true, $useLessc = false,
+                              $useGrowl = false, $useCompression = false)
+  {
+    $this->setIsCheckDates($checkDates);
+    $this->setIsUseLessc($useLessc);
+    $this->setIsUseGrowl($useGrowl);
+    $this->setIsUseCompression($useCompression);
+  }
+
+  /**
+   * Do we need to check dates before compile
+   *
+   * @return boolean
+   */
+  public function isCheckDates()
+  {
+    return sfConfig::get('app_sf_less_php_plugin_check_dates', $this->checkDates);
+  }
+
+  /**
+   * Set need of check dates before compile
+   *
+   * @param boolean $checkDates Do we need to check dates before compile
+   */
+  public function setIsCheckDates($checkDates)
+  {
+    $this->checkDates = $checkDates;
+  }
+
+  /**
+   * Do we use ruby LESSC compiler
+   *
+   * @return boolean
+   */
+  public function isUseLessc()
+  {
+    return sfConfig::get('app_sf_less_php_plugin_use_lessc', $this->useLessc);
+  }
+
+  /**
+   * Set need of use ruby LESSC compiler
+   *
+   * @param boolean $useLessc Do we use ruby LESSC compiler
+   */
+  public function setIsUseLessc($useLessc)
+  {
+    $this->useLessc = $useLessc;
+  }
+
+  /**
+   * Do we use LESSC GROWL notifications
+   *
+   * @return boolean
+   */
+  public function isUseGrowl()
+  {
+    return sfConfig::get('app_sf_less_php_plugin_use_growl', $this->useGrowl);
+  }
+
+  /**
+   * Set need of LESSC GROWL notifications
+   *
+   * @param boolean $useGrowl Do we use LESSC GROWL notifications
+   */
+  public function setIsUseGrowl($useGrowl)
+  {
+    $this->useGrowl = $useGrowl;
+  }
+
+  /**
+   * Do we need compression for CSS files
+   *
+   * @return boolean
+   */
+  public function isUseCompression()
+  {
+    return sfConfig::get('app_sf_less_php_plugin_use_compression', $this->useCompression);
+  }
+
+  /**
+   * Set need of compression for CSS files
+   *
+   * @param boolean $useCompression Do we need compression for CSS files
+   */
+  public function setIsUseCompression($useCompression)
+  {
+    $this->useCompression = $useCompression;
+  }
+
+  /**
    * Returns paths to CSS files
    *
    * @return string a path to CSS files directory
@@ -94,9 +219,10 @@ class sfLessPhp
    */
   static public function findAndCompile(sfEvent $event)
   {
+    $lessHelper = new self;
     foreach (self::findLessFiles() as $lessFile)
     {
-      self::compile($lessFile);
+      $lessHelper->compile($lessFile);
     }
   }
 
@@ -104,44 +230,51 @@ class sfLessPhp
    * Compiles LESS file to CSS
    *
    * @param string $lessFile a LESS file
-   * @param boolean $checkDates do we need to check dates before compile?
    * @return boolean true if succesfully compiled & false in other way
    */
-  static public function compile($lessFile, $checkDates = null, $useLessc = null)
+  public function compile($lessFile)
   {
     if ('_' !== substr(basename($lessFile), 0, 1))
     {
-      $useLessc = is_null($useLessc)
-        ? sfConfig::get('app_sf_less_php_plugin_use_lessc', false)
-        : $useLessc;
-      $checkDates = is_null($checkDates)
-        ? sfConfig::get('app_sf_less_php_plugin_check_dates', true)
-        : $checkDates;
+      // Gets CSS file path
       $cssFile = str_replace(
         array('data/stylesheets', '.less'),
         array('web/css', '.css'),
         $lessFile
       );
 
+      // Checks if path exists & create if not
       if (!is_dir(dirname($cssFile)))
       {
         mkdir(dirname($cssFile), 0777, true);
       }
 
-      if ($checkDates)
+      // If we check dates - recompile only really old CSS
+      if ($this->isCheckDates())
       {
         if (!is_file($cssFile) || filemtime($lessFile) > filemtime($cssFile))
         {
-          return self::callCompiler($lessFile, $cssFile, $useLessc);
+          return $this->callCompiler($lessFile, $cssFile);
         }
       }
       else
       {
-        return self::callCompiler($lessFile, $cssFile, $useLessc);
+        return $this->callCompiler($lessFile, $cssFile);
       }
     }
 
     return false;
+  }
+
+  /**
+   * Compress CSS by removing whitespaces, tabs, newlines, etc.
+   *
+   * @param string $css CSS to be compressed
+   * @return string compressed CSS
+   */
+  static protected function getCompressedCss($css)
+  {
+    return str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css);
   }
 
   /**
@@ -151,23 +284,34 @@ class sfLessPhp
    * @param string $cssFile a CSS file
    * @return boolean true if succesfully compiled & false in other way
    */
-  static protected function callCompiler($lessFile, $cssFile, $useLessc = false)
+  protected function callCompiler($lessFile, $cssFile)
   {
-    if (!$useLessc && !sfConfig::get('app_sf_less_php_plugin_use_lessc', false))
-    {
-      $less = new lessc($lessFile);
-      file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $less->parse());
+    // CSS out buffer
+    $buffer = '';
 
-      return true;
+    // Use proper compiler
+    if (!$this->isUseLessc())
+    {
+      // Compile with lessphp
+      $less = new lessc($lessFile);
+      $buffer = $less->parse();
     }
     else
     {
-      $command = sfConfig::get('app_sf_less_php_plugin_use_growl', false) ? 'lessc -g' : 'lessc';
-      exec(sprintf('%s "%s" "%s"', $command, $lessFile, $cssFile));
-      $css = file_get_contents($cssFile);
-      file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $css);
-
-      return true;
+      // Compile with lessc
+      exec(sprintf('lessc%s "%s" "%s"', $this->isUseGrowl() ? ' -g' : '', $lessFile, $cssFile));
+      $buffer = file_get_contents($cssFile);
     }
+
+    // Compress CSS if we use compression
+    if ($this->isUseCompression())
+    {
+      $buffer = self::getCompressedCss($buffer);
+    }
+
+    // Add compiler header to CSS & writes it to file
+    file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $buffer);
+
+    return true;
   }
 }

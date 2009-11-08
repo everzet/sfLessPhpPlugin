@@ -95,6 +95,12 @@ And of course, if you use Mac OS & Ruby lessc compiler, you can set it to use Gr
 	  sf_less_php_plugin:
 	    use_growl:	true
 
+Last but not least, you can enable CSS compression (remove of whitespaces, tabs & newlines) by:
+
+	all:
+	  sf_less_php_plugin:
+	    use_compression:	true
+
 Tasks
 =====
 
