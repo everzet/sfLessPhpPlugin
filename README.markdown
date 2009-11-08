@@ -112,11 +112,15 @@ To parse all LESS files and save the resulting CSS files to the destination path
 
 To delete all compiled CSS (only files, that been compiled from LESS files) files before parsing LESS, run:
 
-	$ symfony less:compile --with-clean
+	$ symfony less:compile --clean
 
 If you want to use lessc parser instead of default lessphp, run:
 
 	$ symfony less:compile --lessc
+
+If you want to compress CSS files after compilation, run:
+
+	$ symfony less:compile --compression
 
 Git
 ===
