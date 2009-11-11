@@ -15,6 +15,9 @@ class lessCompileTask extends sfBaseTask
   protected function configure()
   {
     $this->addOptions(array(
+      new sfCommandOption('application', null, sfCommandOption::PARAMETER_OPTIONAL, 'The application name', null),
+      new sfCommandOption('env', null, sfCommandOption::PARAMETER_REQUIRED, 'The environment', 'prod'),
+
       new sfCommandOption('lessc', null, sfCommandOption::PARAMETER_NONE, 'Use lessc instead of phpless'),
       new sfCommandOption('clean', null, sfCommandOption::PARAMETER_NONE, 'Removing all compiled CSS in web/css before compile'),
       new sfCommandOption('compress', null, sfCommandOption::PARAMETER_NONE, 'Compress final CSS file')
@@ -42,9 +45,7 @@ EOF;
       foreach (sfLessPhp::findCssFiles() as $cssFile)
       {
         unlink($cssFile);
-        $this->logSection('removed', str_replace(
-          sfConfig::get('sf_root_dir') . '/web/css/', '', $cssFile
-        ));
+        $this->logSection('removed', str_replace(sfLessPhp::getCssPaths(), '', $cssFile));
       }
     }
 
@@ -57,9 +58,7 @@ EOF;
     {
       if ($lessHelper->compile($lessFile))
       {
-        $this->logSection('compiled', str_replace(
-          sfConfig::get('sf_root_dir') . '/data/stylesheets/', '', $lessFile
-        ));
+        $this->logSection('compiled', str_replace(sfLessPhp::getLessPaths(), '', $lessFile));
       }
     }
   }
