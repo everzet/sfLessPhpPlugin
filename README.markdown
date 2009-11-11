@@ -120,7 +120,11 @@ If you want to use lessc parser instead of default lessphp, run:
 
 If you want to compress CSS files after compilation, run:
 
-	$ symfony less:compile --compression
+	$ symfony less:compile --compress
+
+Also, by default tasks don't use settings from app.yml such as "path". But you can specify application option to tell compiler from which app to get config:
+
+	$ symfony less:compile --application=frontend
 
 Git
 ===
