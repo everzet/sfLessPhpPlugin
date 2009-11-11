@@ -213,6 +213,21 @@ class sfLessPhp
   }
 
   /**
+   * Returns CSS file path by its LESS alternative
+   *
+   * @param string $lessFile LESS file path
+   * @return string CSS file path
+   */
+  static public function getCssPathOfLess($lessFile)
+  {
+    return str_replace(
+      array($this->getLessPaths(), '.less'),
+      array($this->getCssPaths(), '.css'),
+      $lessFile
+    );
+  }
+
+  /**
    * Listens to the routing.load_configuration event. Finds & compiles LESS files to CSS
    *
    * @param sfEvent $event an sfEvent instance
@@ -237,11 +252,7 @@ class sfLessPhp
     if ('_' !== substr(basename($lessFile), 0, 1))
     {
       // Gets CSS file path
-      $cssFile = str_replace(
-        array('data/stylesheets', '.less'),
-        array('web/css', '.css'),
-        $lessFile
-      );
+      $cssFile = self::getCssPathOfLess($lessFile);
 
       // Checks if path exists & create if not
       if (!is_dir(dirname($cssFile)))
