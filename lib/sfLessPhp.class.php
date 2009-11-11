@@ -1,8 +1,5 @@
 <?php
 
-// Loading lessphp (http://github.com/leafo/lessphp)
-require_once dirname(__FILE__) . '/vendor/lessphp/lessc.inc.php';
-
 /**
  * Helper class for LESS files compiling
  *
@@ -221,8 +218,8 @@ class sfLessPhp
   static public function getCssPathOfLess($lessFile)
   {
     return str_replace(
-      array($this->getLessPaths(), '.less'),
-      array($this->getCssPaths(), '.css'),
+      array(self::getLessPaths(), '.less'),
+      array(self::getCssPaths(), '.css'),
       $lessFile
     );
   }
@@ -303,6 +300,9 @@ class sfLessPhp
     // Use proper compiler
     if (!$this->isUseLessc())
     {
+      // Loading lessphp (http://github.com/leafo/lessphp)
+      require_once dirname(__FILE__) . '/vendor/lessphp/lessc.inc.php';
+
       // Compile with lessphp
       $less = new lessc($lessFile);
       $buffer = $less->parse();
