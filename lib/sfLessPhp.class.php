@@ -141,7 +141,7 @@ class sfLessPhp
    */
   static public function getCssPaths()
   {  
-    return sfConfig::get('sf_web_dir') . '/css';
+    return sfConfig::get('sf_web_dir') . '/css/';
   }
 
   /**
@@ -193,7 +193,7 @@ class sfLessPhp
   {
     return sfConfig::get(
       'app_sf_less_php_plugin_path',
-      sfConfig::get('sf_data_dir') . '/stylesheets'
+      sfConfig::get('sf_data_dir') . '/stylesheets/'
     );
   }
 
