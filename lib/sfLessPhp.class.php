@@ -1,11 +1,20 @@
 <?php
 
-/**
- * Helper class for LESS files compiling
+/*
+ * This file is part of the sfLessPhpPlugin.
+ * (c) 2009 Konstantin Kudryashov <ever.zet@gmail.com>
  *
- * @package     sfLessPhpPlugin
- * @subpackage  helper
- * @author      ever.zet <ever.zet@gmail.com>
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+/**
+ * sfLessPhp is helper class to provide LESS compiling in symfony projects.
+ *
+ * @package    sfLessPhpPlugin
+ * @subpackage lib
+ * @author     Konstantin Kudryashov <ever.zet@gmail.com>
+ * @version    1.2.3
  */
 class sfLessPhp
 {
