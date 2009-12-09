@@ -71,6 +71,34 @@ class sfLessPhp
   }
 
   /**
+   * Returns debug info of the current state
+   *
+   * @return array state
+   */
+  public function getDebugInfo()
+  {
+    return array(
+      'dates'       => var_export($this->isCheckDates(), true),
+      'lessc'       => var_export($this->isUseLessc(), true),
+      'growl'       => var_export($this->isUseGrowl(), true),
+      'compress'    => var_export($this->isUseCompression(), true),
+      'less'        => $this->getLessPaths(),
+      'css'         => $this->getCssPaths()
+    );
+  }
+
+  /**
+   * Returns relative path from the project root dir
+   *
+   * @param string $fullPath full path to file
+   * @return string relative path from the project root
+   */
+  public static function getProjectRelativePath($fullPath)
+  {
+    return str_replace(sfConfig::get('sf_root_dir') . '/', '', $fullPath);
+  }
+
+  /**
    * Do we need to check dates before compile
    *
    * @return boolean

@@ -47,6 +47,10 @@ class lessCompileTask extends sfBaseTask
       new sfCommandOption(
         'compress',     null, sfCommandOption::PARAMETER_NONE,
         'Compress final CSS file'
+      ),
+      new sfCommandOption(
+        'debug',        null, sfCommandOption::PARAMETER_NONE,
+        'Outputs debug info'
       )
     ));
 
@@ -83,6 +87,15 @@ EOF;
     $lessHelper = new sfLessPhp(false, isset($options['lessc']) && $options['lessc'],
                                 false, isset($options['compress']) && $options['compress']);
 
+    // Outputs debug info
+    if (isset($options['debug']) && $options['debug'])
+    {
+      foreach ($lessHelper->getDebugInfo() as $key => $value)
+      {
+        $this->logSection('debug', sprintf("%s:\t%s", $key, $value), null, 'INFO');
+      }
+    }
+
     // Compiles LESS files
     foreach (sfLessPhp::findLessFiles() as $lessFile)
     {
@@ -90,7 +103,19 @@ EOF;
       {
         if ($lessHelper->compile($lessFile))
         {
-          $this->logSection('compiled', str_replace(sfLessPhp::getLessPaths(), '', $lessFile));
+          if (isset($options['debug']) && $options['debug'])
+          {
+            $this->logSection('compiled', sprintf("%s => %s",
+              sfLessPhp::getProjectRelativePath($lessFile),
+              sfLessPhp::getProjectRelativePath(sfLessPhp::getCssPathOfLess($lessFile))
+            ), null, 'COMMAND');
+          }
+          else
+          {
+            $this->logSection(
+              'compiled', str_replace(sfLessPhp::getLessPaths(), '', $lessFile), null, 'COMMAND'
+            );
+          }
         }
       }
     }
