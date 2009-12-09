@@ -14,7 +14,7 @@
  * @package    sfLessPhpPlugin
  * @subpackage lib
  * @author     Konstantin Kudryashov <ever.zet@gmail.com>
- * @version    1.2.3
+ * @version    1.3
  */
 class sfLessPhp
 {
@@ -45,6 +45,13 @@ class sfLessPhp
    * @var boolean
    */
   protected $useCompression = false;
+
+  /**
+   * Current LESS file to be parsed. This var used to help output errors in callCompiler()
+   *
+   * @var string
+   */
+  protected $currentFile;
 
   /**
    * Constructor
@@ -289,7 +296,7 @@ class sfLessPhp
    * @param string $css CSS to be compressed
    * @return string compressed CSS
    */
-  static protected function getCompressedCss($css)
+  static public function getCompressedCss($css)
   {
     return str_replace(array("\r\n", "\r", "\n", "\t", '  ', '    ', '    '), '', $css);
   }
@@ -301,26 +308,19 @@ class sfLessPhp
    * @param string $cssFile a CSS file
    * @return boolean true if succesfully compiled & false in other way
    */
-  protected function callCompiler($lessFile, $cssFile)
+  public function callCompiler($lessFile, $cssFile)
   {
-    // CSS out buffer
-    $buffer = '';
+    // Setting current file. We will output this var if compiler throws error
+    $this->currentFile = $lessFile;
 
     // Use proper compiler
-    if (!$this->isUseLessc())
+    if ($this->isUseLessc())
     {
-      // Loading lessphp (http://github.com/leafo/lessphp)
-      require_once dirname(__FILE__) . '/vendor/lessphp/lessc.inc.php';
-
-      // Compile with lessphp
-      $less = new lessc($lessFile);
-      $buffer = $less->parse();
+      $buffer = $this->callLesscCompiler($lessFile, $cssFile);
     }
     else
     {
-      // Compile with lessc
-      exec(sprintf('lessc%s "%s" "%s"', $this->isUseGrowl() ? ' -g' : '', $lessFile, $cssFile));
-      $buffer = file_get_contents($cssFile);
+      $buffer = $this->callLessphpCompiler($lessFile, $cssFile);
     }
 
     // Compress CSS if we use compression
@@ -332,6 +332,76 @@ class sfLessPhp
     // Add compiler header to CSS & writes it to file
     file_put_contents($cssFile, self::getCssHeader() . "\n\n" . $buffer);
 
+    // Setting current file to null
+    $this->currentFile = null;
+
     return true;
+  }
+
+  /**
+   * Calls Lessphp compiler for LESS file
+   *
+   * @param string $lessFile a LESS file
+   * @param string $cssFile a CSS file
+   * @return string output
+   */
+  public function callLessphpCompiler($lessFile, $cssFile)
+  {
+    // Loading lessphp (http://github.com/leafo/lessphp)
+    require_once dirname(__FILE__) . '/vendor/lessphp/lessc.inc.php';
+    $less = new lessc($lessFile);
+
+    // Compile with lessphp
+    try
+    {
+      $output = $less->parse();
+    }
+    catch (exception $e)
+    {
+      $this->throwCompilerError($e->getMessage());
+    }
+
+    return $output;
+  }
+
+  /**
+   * Calls lessc compiler for LESS file
+   *
+   * @param string $lessFile a LESS file
+   * @param string $cssFile a CSS file
+   * @return string output
+   */
+  public function callLesscCompiler($lessFile, $cssFile)
+  {
+    // Compile with lessc
+    $fs = new sfFilesystem;
+    $command = sprintf('lessc%s "%s" "%s"', 
+      $this->isUseGrowl() ? ' -g' : '', $lessFile, $cssFile);
+
+    if ('1.3.0' <= SYMFONY_VERSION)
+    {
+      $fs->execute($command, null, array($this, 'throwCompilerError'));
+    }
+    else
+    {
+      $fs->sh($command);
+    }
+
+    return file_get_contents($cssFile);
+  }
+
+  /**
+   * Throws formatted compiler error
+   *
+   * @param string $line error line
+   * @return void
+   */
+  public function throwCompilerError($line)
+  {
+    throw new RuntimeException(sprintf("LESS parser (%s) error in \"%s\":\n\n%s",
+      $this->isUseLessc() ? 'lessc' : 'lessphp',
+      $this->currentFile,
+      $line
+    ));
   }
 }

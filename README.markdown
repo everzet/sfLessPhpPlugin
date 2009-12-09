@@ -126,6 +126,10 @@ Also, by default tasks don't use settings from app.yml such as "path". But you c
 
 	$ symfony less:compile --application=frontend
 
+If you want to compile specific file, not all, just use argument & file name without ".less". To compile style.less into style.css, just run:
+
+	$ symfony less:compile style
+
 Git
 ===
 

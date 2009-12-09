@@ -23,6 +23,10 @@ class lessCompileTask extends sfBaseTask
    */
   protected function configure()
   {
+    $this->addArguments(array(
+      new sfCommandArgument('file', sfCommandArgument::OPTIONAL, 'LESS file to compile')
+    ));
+
     $this->addOptions(array(
       new sfCommandOption(
         'application',  null, sfCommandOption::PARAMETER_OPTIONAL,
@@ -67,8 +71,11 @@ EOF;
     {
       foreach (sfLessPhp::findCssFiles() as $cssFile)
       {
-        unlink($cssFile);
-        $this->logSection('removed', str_replace(sfLessPhp::getCssPaths(), '', $cssFile));
+        if (!isset($arguments['file']) || (false !== strpos($cssFile, $arguments['file'] . '.css')))
+        {
+          unlink($cssFile);
+          $this->logSection('removed', str_replace(sfLessPhp::getCssPaths(), '', $cssFile));
+        }
       }
     }
 
@@ -79,9 +86,12 @@ EOF;
     // Compiles LESS files
     foreach (sfLessPhp::findLessFiles() as $lessFile)
     {
-      if ($lessHelper->compile($lessFile))
+      if (!isset($arguments['file']) || (false !== strpos($lessFile, $arguments['file'] . '.less')))
       {
-        $this->logSection('compiled', str_replace(sfLessPhp::getLessPaths(), '', $lessFile));
+        if ($lessHelper->compile($lessFile))
+        {
+          $this->logSection('compiled', str_replace(sfLessPhp::getLessPaths(), '', $lessFile));
+        }
       }
     }
   }

@@ -28,7 +28,7 @@ class sfLessPhpPluginConfiguration extends sfPluginConfiguration
     {
       // Register listener to routing.load_configuration event
       $this->dispatcher->connect(
-        'routing.load_configuration',
+        'context.load_factories',
         array('sfLessPhp', 'findAndCompile')
       );
     }
