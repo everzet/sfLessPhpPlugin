@@ -88,6 +88,17 @@ class sfLessPhp
   }
 
   /**
+   * Returns path with changed directory separators to unix-style (\ => /)
+   *
+   * @param string $path basic path
+   * @return string unix-style path
+   */
+  public static function getSepFixedPath($path)
+  {
+    return str_replace(DIRECTORY_SEPARATOR, '/', $path);
+  }
+
+  /**
    * Returns relative path from the project root dir
    *
    * @param string $fullPath full path to file
@@ -95,7 +106,11 @@ class sfLessPhp
    */
   public static function getProjectRelativePath($fullPath)
   {
-    return str_replace(sfConfig::get('sf_root_dir') . '/', '', $fullPath);
+    return str_replace(
+      self::getSepFixedPath(sfConfig::get('sf_root_dir')) . '/',
+      '',
+      self::getSepFixedPath($fullPath)
+    );
   }
 
   /**
@@ -185,7 +200,7 @@ class sfLessPhp
    */
   static public function getCssPaths()
   {  
-    return sfConfig::get('sf_web_dir') . '/css/';
+    return self::getSepFixedPath(sfConfig::get('sf_web_dir')) . '/css/';
   }
 
   /**
@@ -237,7 +252,7 @@ class sfLessPhp
   {
     return sfConfig::get(
       'app_sf_less_php_plugin_path',
-      sfConfig::get('sf_data_dir') . '/stylesheets/'
+      self::getSepFixedPath(sfConfig::get('sf_data_dir')) . '/stylesheets/'
     );
   }
 
