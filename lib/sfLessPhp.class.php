@@ -293,11 +293,10 @@ class sfLessPhp
     // Start compilation timer for debug info
     $timer = sfTimerManager::getTimer('Less compilation');
 
-    // Create new helper object
+    // Create new helper object & compile LESS stylesheets with it
     $lessHelper = new self;
     foreach (self::findLessFiles() as $lessFile)
     {
-      // Compile LESS stylesheet
       $lessHelper->compile($lessFile);
     }
 
