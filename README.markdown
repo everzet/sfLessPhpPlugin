@@ -141,8 +141,8 @@ If you are using git to version control your code and LESS for all your styleshe
 Contributors
 ============
 
-* everzet ([http://github.com/everzet](http://github.com/everzet))
-* tonio ([http://github.com/tonio](http://github.com/tonio))
+* everzet (lead): [http://github.com/everzet](http://github.com/everzet)
+* tonio: [http://github.com/tonio](http://github.com/tonio)
 
 sfLessPhpPlugin is based on lessphp by leafo ([http://github.com/leafo](http://github.com/leafo))
 

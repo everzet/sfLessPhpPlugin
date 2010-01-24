@@ -265,6 +265,7 @@ class sfLessPhp
   {
     return sfFinder::type('file')
       ->name('*.less')
+      ->discard('_*')
       ->in(self::getLessPaths());
   }
 
@@ -312,32 +313,44 @@ class sfLessPhp
    */
   public function compile($lessFile)
   {
-    if ('_' !== substr(basename($lessFile), 0, 1))
+    // Creates timer
+    $timer = new sfTimer;
+
+    // Gets CSS file path
+    $cssFile = self::getCssPathOfLess($lessFile);
+
+    // Checks if path exists & create if not
+    if (!is_dir(dirname($cssFile)))
     {
-      // Gets CSS file path
-      $cssFile = self::getCssPathOfLess($lessFile);
-
-      // Checks if path exists & create if not
-      if (!is_dir(dirname($cssFile)))
-      {
-        mkdir(dirname($cssFile), 0777, true);
-      }
-
-      // If we check dates - recompile only really old CSS
-      if ($this->isCheckDates())
-      {
-        if (!is_file($cssFile) || filemtime($lessFile) > filemtime($cssFile))
-        {
-          return $this->callCompiler($lessFile, $cssFile);
-        }
-      }
-      else
-      {
-        return $this->callCompiler($lessFile, $cssFile);
-      }
+      mkdir(dirname($cssFile), 0777, true);
     }
 
-    return false;
+    // Is file compiled
+    $isCompiled = false;
+
+    // If we check dates - recompile only really old CSS
+    if ($this->isCheckDates())
+    {
+      if (!is_file($cssFile) || filemtime($lessFile) > filemtime($cssFile))
+      {
+        $isCompiled = $this->callCompiler($lessFile, $cssFile);
+      }
+    }
+    else
+    {
+      $isCompiled = $this->callCompiler($lessFile, $cssFile);
+    }
+
+    // Stops timer
+    $timer->addTime();
+
+    // Adds debug info to debug panel if on
+    if (sfConfig::get('app_sf_less_php_plugin_toolbar', true))
+    {
+      sfWebDebugPanelLess::addStylesheetInfo($lessFile, $cssFile, $timer->getElapsedTime(), $isCompiled);
+    }
+
+    return $isCompiled;
   }
 
   /**

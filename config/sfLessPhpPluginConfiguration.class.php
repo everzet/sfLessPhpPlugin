@@ -14,7 +14,7 @@
  * @package    sfLessPhpPlugin
  * @subpackage configuration
  * @author     Konstantin Kudryashov <ever.zet@gmail.com>
- * @version    1.2.3
+ * @version    1.3.2
  */
 class sfLessPhpPluginConfiguration extends sfPluginConfiguration
 {
@@ -31,6 +31,16 @@ class sfLessPhpPluginConfiguration extends sfPluginConfiguration
         'context.load_factories',
         array('sfLessPhp', 'findAndCompile')
       );
+    }
+
+    // If app_sf_less_php_plugin_toolbar in app.yml is set to true (by default)
+    if (sfConfig::get('sf_web_debug') && sfConfig::get('app_sf_less_php_plugin_toolbar', true))
+    {
+      // Add LESS toolbar to Web Debug toolbar
+      $this->dispatcher->connect('debug.web.load_panels', array(
+        'sfWebDebugPanelLess',
+        'listenToLoadDebugWebPanelEvent'
+      ));
     }
   }
 }
