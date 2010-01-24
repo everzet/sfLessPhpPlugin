@@ -95,6 +95,8 @@ And of course, if you use Mac OS & Ruby lessc compiler, you can set it to use Gr
 	  sf_less_php_plugin:
 	    use_growl:	true
 
+In 1.3.2 version Web Debug Panel was added, from which you can view all styles to compile & can open them for edit in prefered editor. For that you need to configure sf_file_link_format in settings.yml.
+
 Last but not least, you can enable CSS compression (remove of whitespaces, tabs & newlines) by:
 
 	all:
