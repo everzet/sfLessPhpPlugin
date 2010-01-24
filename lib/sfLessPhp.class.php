@@ -14,7 +14,7 @@
  * @package    sfLessPhpPlugin
  * @subpackage lib
  * @author     Konstantin Kudryashov <ever.zet@gmail.com>
- * @version    1.3
+ * @version    1.3.2
  */
 class sfLessPhp
 {
@@ -290,11 +290,19 @@ class sfLessPhp
    */
   static public function findAndCompile(sfEvent $event)
   {
+    // Start compilation timer for debug info
+    $timer = sfTimerManager::getTimer('Less compilation');
+
+    // Create new helper object
     $lessHelper = new self;
     foreach (self::findLessFiles() as $lessFile)
     {
+      // Compile LESS stylesheet
       $lessHelper->compile($lessFile);
     }
+
+    // Stop timer
+    $timer->addTime();
   }
 
   /**
