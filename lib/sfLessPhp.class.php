@@ -2,7 +2,7 @@
 
 /*
  * This file is part of the sfLessPhpPlugin.
- * (c) 2009 Konstantin Kudryashov <ever.zet@gmail.com>
+ * (c) 2010 Konstantin Kudryashov <ever.zet@gmail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -14,10 +14,24 @@
  * @package    sfLessPhpPlugin
  * @subpackage lib
  * @author     Konstantin Kudryashov <ever.zet@gmail.com>
- * @version    1.3.2
+ * @version    1.4.0
  */
 class sfLessPhp
 {
+  /**
+   * Array of LESS styles
+   *
+   * @var array
+   **/
+  protected static $results = array();
+
+  /**
+   * Errors of compiler
+   *
+   * @var array
+   **/
+  protected static $errors  = array();
+
   /**
    * Do we need to check dates before compile
    *
@@ -68,6 +82,26 @@ class sfLessPhp
     $this->setIsUseLessc($useLessc);
     $this->setIsUseGrowl($useGrowl);
     $this->setIsUseCompression($useCompression);
+  }
+
+  /**
+   * Returns array of compiled styles info
+   *
+   * @return array
+   */
+  public static function getCompileResults()
+  {
+    return self::$results;
+  }
+
+  /**
+   * Returns array of compiled styles errors
+   *
+   * @return array
+   */
+  public static function getCompileErrors()
+  {
+    return self::$errors;
   }
 
   /**
@@ -341,14 +375,13 @@ class sfLessPhp
       $isCompiled = $this->callCompiler($lessFile, $cssFile);
     }
 
-    // Stops timer
-    $timer->addTime();
-
-    // Adds debug info to debug panel if on
-    if (sfConfig::get('app_sf_less_php_plugin_toolbar', true))
-    {
-      sfWebDebugPanelLess::addStylesheetInfo($lessFile, $cssFile, $timer->getElapsedTime(), $isCompiled);
-    }
+    // Adds debug info to debug array
+    self::$results[] = array(
+      'lessFile'   => $lessFile,
+      'cssFile'    => $cssFile,
+      'compTime'   => $timer->getElapsedTime(),
+      'isCompiled' => $isCompiled
+    );
 
     return $isCompiled;
   }
@@ -386,6 +419,12 @@ class sfLessPhp
       $buffer = $this->callLessphpCompiler($lessFile, $cssFile);
     }
 
+    // Checks if compiler returns false
+    if (false === $buffer)
+    {
+      return $buffer;
+    }
+
     // Compress CSS if we use compression
     if ($this->isUseCompression())
     {
@@ -419,9 +458,9 @@ class sfLessPhp
     {
       $output = $less->parse();
     }
-    catch (exception $e)
+    catch (RuntimeException $e)
     {
-      $this->throwCompilerError($e->getMessage());
+      return $this->throwCompilerError($e->getMessage());
     }
 
     return $output;
@@ -443,7 +482,14 @@ class sfLessPhp
 
     if ('1.3.0' <= SYMFONY_VERSION)
     {
-      $fs->execute($command, null, array($this, 'throwCompilerError'));
+      try
+      {
+        $fs->execute($command, null, array($this, 'throwCompilerError'));
+      }
+      catch (RuntimeException $e)
+      {
+        return false;
+      }
     }
     else
     {
@@ -454,17 +500,45 @@ class sfLessPhp
   }
 
   /**
+   * Returns true if compiler can throw RuntimeException
+   *
+   * @return boolean
+   */
+  public function canThrowExceptions()
+  {
+    return (('prod' !== sfConfig::get('sf_environment') || !sfConfig::get('sf_app')) &&
+        !(sfConfig::get('sf_web_debug') && sfConfig::get('app_sf_less_php_plugin_toolbar', true))
+    );
+  }
+
+  /**
    * Throws formatted compiler error
    *
    * @param string $line error line
-   * @return void
+   * @return boolean false
    */
   public function throwCompilerError($line)
   {
-    throw new RuntimeException(sprintf("LESS parser (%s) error in \"%s\":\n\n%s",
+    // Generate error description
+    $errorDescription = sprintf("LESS parser (%s) error in \"%s\":\n\n%s",
       $this->isUseLessc() ? 'lessc' : 'lessphp',
       $this->currentFile,
       $line
-    ));
+    );
+
+    // Adds error description to list of errors
+    self::$errors[$this->currentFile] = $errorDescription;
+
+    // Throw exception if allowed & log error otherwise
+    if ($this->canThrowExceptions())
+    {
+      throw new sfException($errorDescription);
+    }
+    else
+    {
+      sfContext::getInstance()->getLogger()->err($errorDescription);
+    }
+
+    return false;
   }
 }
