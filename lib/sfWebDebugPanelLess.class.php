@@ -19,13 +19,6 @@
 class sfWebDebugPanelLess extends sfWebDebugPanel
 {
   /**
-   * Array of stylesheets
-   *
-   * @var array
-   **/
-  protected static $stylesheets = array();
-
-  /**
    * Listens to LoadDebugWebPanel event & adds this panel to the Web Debug toolbar
    *
    * @param sfEvent $event
@@ -36,24 +29,6 @@ class sfWebDebugPanelLess extends sfWebDebugPanel
     $event->getSubject()->setPanel(
       'documentation',
       new self($event->getSubject())
-    );
-  }
-
-  /**
-   * Adds stylesheet info to panel
-   *
-   * @param string $lessFile LESS style file
-   * @param string $cssFile CSS style file
-   * @param integer $compileTime time in miliseconds
-   * @param boolean $isCompiled is style compiled
-   * @return void
-   */
-  public static function addStylesheetInfo($lessFile, $cssFile, $compileTime, $isCompiled)
-  {
-    self::$stylesheets[$lessFile] = array(
-      'cssFile'     => $cssFile,
-      'compileTime' => $compileTime,
-      'isCompiled'  => $isCompiled
     );
   }
 
