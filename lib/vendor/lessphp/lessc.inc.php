@@ -61,7 +61,7 @@ class lessc
 	public function load($fname)
 	{
 		if (!is_file($fname)) {
-			throw new Exception('load error: failed to find '.$fname);
+			throw new RuntimeException('load error: failed to find '.$fname);
 		}
 		$pi = pathinfo($fname);
 
@@ -314,7 +314,7 @@ class lessc
 		// something failed
 		// print_r($this->env);
 		$this->match("(.*?)(\n|$)", $m);
-		throw new exception('Failed to parse line '.$this->line."\nOffending line: ".$m[1]);
+		throw new RuntimeException('Failed to parse line '.$this->line."\nOffending line: ".$m[1]);
 	}
 
 
@@ -367,7 +367,7 @@ class lessc
 		} catch (exception $ex) {
 			// there is an end of block next, then no problem
 			if (strlen($this->buffer) <= $this->count || $this->buffer{$this->count} != '}')
-				throw new exception('parse error: failed to find end');
+				throw new RuntimeException('parse error: failed to find end');
 		}
 
 		return $this;
@@ -448,7 +448,7 @@ class lessc
 
 		// can't start with a number
 		if (!$this->match('(['.$chars.'0-9]['.$chars.']*)', $m))
-			throw new exception('parse error: failed to parse tag');
+			throw new RuntimeException('parse error: failed to parse tag');
 
 		$tag = trim($m[1]);
 
@@ -607,7 +607,7 @@ class lessc
 			return $this;
 		} catch (exception $ex) { /* $this->undo(); */ }
 
-		throw new exception('parse error: failed to find value');
+		throw new RuntimeException('parse error: failed to find value');
 	}
 
 	// $units the allowed units
@@ -617,7 +617,7 @@ class lessc
 		if (!$units) $units = $this->units;
 
 		if (!$this->match('(-?[0-9]*(\.)?[0-9]+)('.implode('|', $units).')?', $m)) {
-			throw new exception('parse error: failed to consume unit');
+			throw new RuntimeException('parse error: failed to consume unit');
 		}
 
 		// throw on a default unit
@@ -681,7 +681,7 @@ class lessc
 			} catch (exception $ex) {
 				$this->count = $save;
 
-				throw new exception('failed to find color');
+				throw new RuntimeException('failed to find color');
 			}
 		}
 
@@ -708,7 +708,7 @@ class lessc
 			try {
 				$this->literal("'")->keyword($name)->literal("'");
 			} catch (exception $ex) {
-				throw new exception('parse error: failed to parse accessor');
+				throw new RuntimeException('parse error: failed to parse accessor');
 			}
 		}
 
@@ -732,7 +732,7 @@ class lessc
 	private function keyword(&$word)
 	{
 		if (!$this->match('([\w_\-!"][\w\-_"]*)', $m)) {
-			throw new Exception('parse error: failed to find keyword');
+			throw new RuntimeException('parse error: failed to find keyword');
 		}
 
 		$word = $m[1];
@@ -743,7 +743,7 @@ class lessc
 	private function to($what, &$out)
 	{
 		if (!$this->match('(.*?)'.$this->preg_quote($what), $m))
-			throw new exception('parse error: failed to consume to '.$what);
+			throw new RuntimeException('parse error: failed to consume to '.$what);
 
 		$out = $m[1];
 
@@ -938,11 +938,11 @@ class lessc
 			$num[] = $lft[1] - $rgt[1];
 			break;
 			case '/';
-			if ($rgt[1] == 0) throw new exception("parse error: can't divide by zero");
+			if ($rgt[1] == 0) throw new RuntimeException("parse error: can't divide by zero");
 			$num[] = $lft[1] / $rgt[1];
 			break;
 		default:
-			throw new exception('parse error: number op number failed on op '.$op);
+			throw new RuntimeException('parse error: number op number failed on op '.$op);
 		}
 
 		return $num;
@@ -985,13 +985,13 @@ class lessc
 			break;
 			case '/';
 			if ($rgt[1] == 0 || $rgt[2] == 0 || $rgt[3] == 0)
-				throw new exception("parse error: can't divide by zero");
+				throw new RuntimeException("parse error: can't divide by zero");
 			$newc[] = $lft[1] / $rgt[1];
 			$newc[] = $lft[2] / $rgt[2];
 			$newc[] = $lft[3] / $rgt[3];
 			break;
 		default:
-			throw new exception('parse error: color op number failed on op '.$op);
+			throw new RuntimeException('parse error: color op number failed on op '.$op);
 		}
 		return $this->fixColor($newc);
 	}
@@ -1089,7 +1089,7 @@ class lessc
 	private function pop()
 	{
 		if ($this->level == 1)
-			throw new exception('parse error: unexpected end of block');
+			throw new RuntimeException('parse error: unexpected end of block');
 
 		$this->level--;
 		return array_pop($this->env);
@@ -1270,6 +1270,3 @@ class lessc
 		return false;
 	}
 }
-
-
-?>
