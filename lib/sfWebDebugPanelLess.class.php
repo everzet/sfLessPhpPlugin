@@ -14,7 +14,7 @@
  * @package    sfLessPhpPlugin
  * @subpackage debug
  * @author     Konstantin Kudryashov <ever.zet@gmail.com>
- * @version    1.3.2
+ * @version    1.4.0
  */
 class sfWebDebugPanelLess extends sfWebDebugPanel
 {
@@ -79,9 +79,11 @@ class sfWebDebugPanelLess extends sfWebDebugPanel
   public function getPanelContent()
   {
     $panel = $this->getConfigurationContent() . '<table class="sfWebDebugLogs" style="width: 300px"><tr><th>less file</th><th>css file</th><th style="text-align:center;">time (ms)</th></tr>';
-    foreach (self::$stylesheets as $lessFile => $info)
+    $errorDescriptions = sfLessPhp::getCompileErrors();
+    foreach (sfLessPhp::getCompileResults() as $info)
     {
-      $panel .= $this->getInfoContent($lessFile, $info);
+      $info['error'] = isset($errorDescriptions[$info['lessFile']]) ? $errorDescriptions[$info['lessFile']] : false;
+      $panel .= $this->getInfoContent($info);
     }
     $panel .= '</table>';
 
@@ -116,23 +118,52 @@ EOF
   /**
    * Returns information row for LESS style compilation
    *
-   * @param string $lessFile LESS style file
    * @param array $info info of compilation process
    * @return string
    */
-  protected function getInfoContent($lessFile, $info)
+  protected function getInfoContent($info, $error = false)
   {
-    return sprintf(<<<EOF
+    // ID of error row
+    $errorId = md5($info['lessFile']);
+
+    // File link for preferred editor
+    $fileLink = $this->formatFileLink(
+      $info['lessFile'], 1, str_replace(sfLessPhp::getLessPaths(), '', $info['lessFile'])
+    );
+
+    // Checking compile & error statuses
+    if ($info['isCompiled'])
+    {
+      $trStyle = 'background-color:#a1d18d;';
+    }
+    elseif ($info['error'])
+    {
+      $this->setStatus(sfLogger::ERR);
+      $trStyle = 'background-color:#f18c89;';
+      $fileLink .= ' ' . $this->getToggler('less_error_' . $errorId, 'Toggle error info');
+    }
+    else
+    {
+      $trStyle = '';
+    }
+
+    // Generating info rows
+    $infoRows = sprintf(<<<EOF
       <tr style="%s">
         <td class="sfWebDebugLogType">%s</td>
         <td class="sfWebDebugLogType">%s</td>
         <td class="sfWebDebugLogNumber" style="text-align:center;">%.2f</td>
       </tr>
+      <tr id="less_error_%s" style="display:none;background-color:#f18c89;"><td style="padding-left:15px" colspan="2">%s<td></tr>
 EOF
-      ,($info['isCompiled'] ? 'background-color:#a1d18d;' : '')
-      ,$this->formatFileLink($lessFile, 1, str_replace(sfLessPhp::getLessPaths(), '', $lessFile))
+      ,$trStyle
+      ,$fileLink
       ,str_replace(sfLessPhp::getCssPaths(), '', $info['cssFile'])
-      ,($info['isCompiled'] ? $info['compileTime'] * 1000 : 0)
+      ,($info['isCompiled'] ? $info['compTime'] * 1000 : 0)
+      ,$errorId
+      ,$info['error']
     );
+
+    return $infoRows;
   }
 }
