@@ -39,6 +39,8 @@ Using git submodules
 Use this if you prefer to use git submodules for plugins:
 
 	$ git submodule add git://github.com/everzet/sfLessPhpPlugin.git plugins/sfLessPhpPlugin
+	$ git submodule init
+	$ git submodule update
 
 
 Usage
