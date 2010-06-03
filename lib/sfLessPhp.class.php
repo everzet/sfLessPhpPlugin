@@ -458,7 +458,7 @@ class sfLessPhp
     {
       $output = $less->parse();
     }
-    catch (RuntimeException $e)
+    catch (Exception $e)
     {
       return $this->throwCompilerError($e->getMessage());
     }
