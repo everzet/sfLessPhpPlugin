@@ -300,6 +300,7 @@ class sfLessPhp
     return sfFinder::type('file')
       ->name('*.less')
       ->discard('_*')
+      ->follow_link()
       ->in(self::getLessPaths());
   }
 
